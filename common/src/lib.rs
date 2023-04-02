@@ -1,4 +1,4 @@
-use std::{collections::HashMap, iter::Map};
+use std::collections::HashMap;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Player {
@@ -77,7 +77,7 @@ pub struct Game {
 }
 
 impl Game {
-    fn new() -> Game {
+    pub fn new() -> Game {
         Game {
             phase: Phase::PlayersTurn(Player::Nought),
             board: [None; 9],
@@ -100,7 +100,7 @@ impl Game {
         }
     }
 
-    fn next_actions(&self) -> Vec<Message> {
+    pub fn next_actions(&self) -> Vec<Message> {
         let mut msg = Vec::new();
         match self.phase {
             Phase::PlayersTurn(player) => {
@@ -144,8 +144,19 @@ impl Game {
                     [TopLeft, Center, BottomRight],
                     [TopRight, Center, BottomLeft],
                 ];
-                println!("{} empty spaces", self.board.iter().filter(|x| x.is_none()).count());
-                if self.board.iter().filter(|x| x.is_none()).count() == 0 {
+
+                let mut winner: Option<Player> = None;
+                for check in CHECKS {
+                    let a = self.board[check[0].index()];
+                    let b = self.board[check[1].index()];
+                    let c = self.board[check[2].index()];
+                    if a.is_some() && a == b && a == c {
+                        winner = Some(a.unwrap());
+                    }
+                }
+                if let Some(winner) = winner {
+                    msg.push(Message::Win(winner));
+                } else if self.board.iter().filter(|x| x.is_none()).count() == 0 {
                     msg.push(Message::Draw)
                 } else {
                     use Player::*;
@@ -179,13 +190,13 @@ impl Listener for Game {
                 self.phase = Phase::PlayersTurn(*player);
             }
             Question(_) => {}
-            AcceptAnswer => {self.answer=None}
-            RejectAnswer(_, _) => {self.answer=None}
+            AcceptAnswer => self.answer = None,
+            RejectAnswer(_, _) => self.answer = None,
         }
     }
 }
 
-trait Listener {
+pub trait Listener {
     fn handle(&mut self, msg: &Message);
 }
 
@@ -197,7 +208,7 @@ impl Listener for MessagePrinter {
     }
 }
 
-trait Agent {
+pub trait Agent {
     fn answer(&mut self, question: &Question) -> Answer;
 }
 
@@ -210,6 +221,25 @@ impl Agent for RandomAgent {
         self.random = self.random.wrapping_mul(22695477).wrapping_add(1);
         let index = ((self.random >> 16) as usize) % (question.1.len());
         Answer(question.1[index])
+    }
+}
+
+struct DeterministicAgent {
+    answers: Vec<Position>,
+    next: usize,
+}
+
+impl DeterministicAgent {
+    fn new(answers: Vec<Position>) -> DeterministicAgent {
+        DeterministicAgent { answers, next: 0 }
+    }
+}
+
+impl Agent for DeterministicAgent {
+    fn answer(&mut self, question: &Question) -> Answer {
+        let answer = Answer(self.answers[self.next]);
+        self.next += 1;
+        answer
     }
 }
 
@@ -260,5 +290,24 @@ mod tests {
             .insert(Player::Nought, Box::new(RandomAgent { random: 97 }));
 
         gl.run();
+    }
+
+    #[test]
+    fn noughts_win() {
+        let game = Game::new();
+        let mut gl = GameLoop {
+            game: game,
+            listeners: vec![],
+            agents: HashMap::new(),
+        };
+        use Position::*;
+        let agent_nought = DeterministicAgent::new(vec![TopLeft, TopRight, TopCenter]);
+        let agent_cross = DeterministicAgent::new(vec![CenterLeft, Center, CenterRight]);
+        gl.agents.insert(Player::Cross, Box::new(agent_cross));
+        gl.agents.insert(Player::Nought, Box::new(agent_nought));
+
+        gl.run();
+
+        assert_eq!(gl.game.phase, Phase::PlayerWon(Player::Nought));
     }
 }
