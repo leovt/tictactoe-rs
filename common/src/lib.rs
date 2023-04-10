@@ -169,10 +169,8 @@ impl Game {
         };
         msg
     }
-}
 
-impl Listener for Game {
-    fn handle(&mut self, msg: &Message) {
+    pub fn handle(&mut self, msg: &Message) {
         use Message::*;
         match msg {
             Move(player, position) => {
