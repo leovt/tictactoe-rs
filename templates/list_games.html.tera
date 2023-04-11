@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang=en>
+
+<head>
+    <meta charset=utf-8>
+    <title>Games</title>
+</head>
+
+<body>
+    <h1>Games</h1>
+    {% if games %}
+    <ul>
+    {% for game in games %}
+        <li><a href="{{game.uri}}">{{game.id}}</a></li>
+    {% endfor %}
+    </ul>
+    {% else %}
+    There are no games currently running.
+    {% endif %}
+</body>
+
+</html>

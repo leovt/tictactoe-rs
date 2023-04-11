@@ -5,15 +5,18 @@ extern crate rocket;
 use common::{Game, Message, Player};
 use rocket::State;
 use rocket_dyn_templates::{Template, context};
+use rocket_dyn_templates::serde::Serialize;
 
 struct GameRunner {
+    id: String,
     game: Game,
     messages: Vec<Message>,
 }
 
 impl GameRunner {
-    fn new() -> GameRunner {
+    fn new(id: String) -> GameRunner {
         GameRunner {
+            id,
             game: Game::new(),
             messages: Vec::new(),
         }
@@ -37,24 +40,24 @@ fn index() -> Template {
     Template::render("index", context!{name: "world"})
 }
 
-use rocket::response::content::RawHtml;
 #[get("/games")]
-fn list_games(games: &State<Games>) -> RawHtml<String> {
-    let mut lines:Vec<String> = vec!["<html>".to_string(),"<body>".to_string(),"<ul>".to_string()];
+fn list_games(games: &State<Games>) -> Template {
     let games = games.lock().expect("lock shared data");
-    for id in games.keys() {
-        let game_uri = uri!(game(id));
-        lines.push(format!("<li><a href=\"{}\">{}</a></li>", &game_uri, &id));
+    #[derive(Serialize)]
+    struct GameInfo {
+        id: String,
+        uri: String,
     }
-    lines.extend(vec!["</ul>".to_string(), "</body>".to_string(),"</html>".to_string()]);
-    RawHtml(lines.join("\r\n"))
+    let games:Vec<GameInfo> = games.keys().map(|id| GameInfo{id:id.clone(), uri:uri!(game(id)).to_string()}).collect();
+
+    Template::render("list_games", context!{games: games})
 }
 
 #[get("/games/<id>")]
 fn game(id: String, games: &State<Games>) -> String {
     let mut games = games.lock().expect("lock shared data");
     if games.get(&id).is_none() {
-        games.insert(id.clone(), GameRunner::new());
+        games.insert(id.clone(), GameRunner::new(id.clone()));
     }
     id.clone()
 }

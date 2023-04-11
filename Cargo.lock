@@ -81,6 +81,7 @@ dependencies = [
  "common",
  "rocket",
  "rocket_dyn_templates",
+ "serde",
 ]
 
 [[package]]
