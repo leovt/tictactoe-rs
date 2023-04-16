@@ -28,7 +28,7 @@ pub enum Position {
 }
 
 impl Position {
-    fn index(&self) -> usize {
+    pub fn index(&self) -> usize {
         use Position::*;
         match *self {
             TopLeft => 0,
@@ -56,7 +56,7 @@ impl Question {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Answer(Position);
+pub struct Answer(pub Position);
 
 #[derive(Debug, Clone)]
 pub enum Message {
@@ -72,7 +72,7 @@ pub enum Message {
 #[derive(Debug)]
 pub struct Game {
     phase: Phase,
-    board: [Option<Player>; 9],
+    pub board: [Option<Player>; 9],
     answer: Option<Answer>,
 }
 
@@ -192,6 +192,28 @@ impl Game {
             RejectAnswer(_, _) => self.answer = None,
         }
     }
+
+    pub fn set_answer(&mut self, answer: Answer) {
+        self.answer = Some(answer);
+    }
+
+    pub fn is_running(&self) -> bool {
+        match self.phase {
+            Phase::PlayerWon(_) => false,
+            Phase::Draw => false,
+            _ => true,
+        }
+    }
+
+    pub fn status_message(&self) -> &str {
+        match self.phase {
+            Phase::PlayerWon(Player::Cross) => "crosses won",
+            Phase::PlayerWon(Player::Nought) => "noughts won",
+            Phase::Draw => "ended in a draw",
+            _ => "running",
+        }
+    }
+
 }
 
 pub trait Listener {

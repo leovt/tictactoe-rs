@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <style>
+        .token {
+            width: 150px;
+            height: 150px;
+        }
+
+        .cross,
+        .nought {
+            border-width: 0;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-color: transparent;
+        }
+
+        .cross {
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewbox='0 0 200 200'%3e%3cpath d='M20 20 180 180M20 180 180 20' style='stroke-width: 12; stroke: red; stroke-linecap:round'/%3e%3c/svg%3e");
+        }
+
+        .nought {
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewbox='0 0 200 200'%3e%3ccircle cx='100' cy='100' r='80' style='stroke-width: 11; stroke:green; fill:none' id='O00'/%3e%3c/svg%3e");
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Play Tic-Tac-Toe!</h1>
+    <p>Status: {{status}}</p>
+    <form method="POST">
+        <table>
+            <tbody>
+                <tr>
+                    <td><button name="TL" class="token {{board.TL}}"></button></td>
+                    <td><button name="TC" class="token {{board.TC}}"></button></td>
+                    <td><button name="TR" class="token {{board.TR}}"></button></td>
+                </tr>
+                <tr>
+                    <td><button name="CL" class="token {{board.CL}}"></button></td>
+                    <td><button name="CC" class="token {{board.CC}}"></button></td>
+                    <td><button name="CR" class="token {{board.CR}}"></button></td>
+                </tr>
+                <tr>
+                    <td><button name="BL" class="token {{board.BL}}"></button></td>
+                    <td><button name="BC" class="token {{board.BC}}"></button></td>
+                    <td><button name="BR" class="token {{board.BR}}"></button></td>
+                </tr>
+            </tbody>
+        </table>
+    </form>
+</body>
+
+</html>

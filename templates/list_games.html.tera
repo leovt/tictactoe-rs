@@ -11,7 +11,7 @@
     {% if games %}
     <ul>
     {% for game in games %}
-        <li><a href="{{game.uri}}">{{game.id}}</a></li>
+        <li><a href="{{game.uri}}">{{game.id}}</a>: {{game.status}}</li>
     {% endfor %}
     </ul>
     {% else %}
