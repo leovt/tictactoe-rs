@@ -213,7 +213,6 @@ impl Game {
             _ => "running",
         }
     }
-
 }
 
 pub trait Listener {
